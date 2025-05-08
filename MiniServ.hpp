@@ -20,7 +20,7 @@
 #include <arpa/inet.h>
 #include <netdb.h>
 
-#define	PORT "5050"
+#define	PORT "4242"
 class MiniServ
 {
 	private:

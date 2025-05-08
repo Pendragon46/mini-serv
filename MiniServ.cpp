@@ -33,7 +33,7 @@ bool	MiniServ::Init(int &socketfd, struct addrinfo **addr)
 	struct addrinfo *res;
 	
 	memset(&hint, 0, sizeof(hint));
-	hint.ai_family = AF_UNSPEC;
+	hint.ai_family = AF_INET;
 	hint.ai_socktype = SOCK_STREAM;
 	hint.ai_flags = AI_PASSIVE;
 	socketfd = socket(hint.ai_family, hint.ai_socktype, hint.ai_protocol);

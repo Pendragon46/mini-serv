@@ -2,7 +2,7 @@ SRCS = main.cpp MiniServ.cpp
 
 OBJ_DIR = obj
 
-OBJ = $(SRCS:%.cpp=%.o)
+OBJ = $(SRCS:%.cpp=$(OBJ_DIR)/%.o)
 
 CXX = c++
 
