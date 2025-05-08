@@ -12,7 +12,7 @@ int main ( void )
 	int				servSocket;
 	struct addrinfo *addrServ;
 
-	if ( MiniServ::Init(servSocket, &addrServ) )
+	if ( MiniServ::Init(servSocket, &addrServ) == false)
 		return (1);
 	while ( true )
 	{
