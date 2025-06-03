@@ -12,14 +12,20 @@ int main ( void )
 	int				servSocket;
 	struct addrinfo *addrServ;
 
-	if ( MiniServ::Init(servSocket, &addrServ) == false)
+	if ( MiniServ::Init(servSocket, &addrServ) == false )
 		return (1);
 	while ( true )
 	{
 		std::cout << "Waiting connection on port " << PORT << " ..." << std::endl;
-		struct addrinfo addrClient;
-		int	clientSocket = accept(servSocket, addrClient.ai_addr, &addrClient.ai_addrlen);
-
+		// struct addrinfo addrClient;
+		struct sockaddr_in addrClient;
+		socklen_t size ;
+		int	clientSocket = accept(servSocket, (sockaddr *)(&addrClient), &size);
+		if (clientSocket  == -1)
+		{
+			std::cerr << "Accept : " << strerror(errno) << std::endl;
+			return (1);
+		}
 		std::cout << "Client connected " << std::endl;
 		std::string data("Congrats your client app work !");
 
@@ -30,5 +36,6 @@ int main ( void )
 		}
 		close(clientSocket);
 	}
+	close(servSocket);
 	return 0;
 }

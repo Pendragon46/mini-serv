@@ -30,30 +30,28 @@ MiniServ &MiniServ::operator=( const MiniServ &toCopy)
 bool	MiniServ::Init(int &socketfd, struct addrinfo **addr)
 {
 	struct addrinfo hint;
-	struct addrinfo *res;
 	
 	memset(&hint, 0, sizeof(hint));
 	hint.ai_family = AF_INET;
 	hint.ai_socktype = SOCK_STREAM;
 	hint.ai_flags = AI_PASSIVE;
-	socketfd = socket(hint.ai_family, hint.ai_socktype, hint.ai_protocol);
-	if ( socketfd < 0 )
-	{
-		std::cerr << "CreateSocket : " << strerror(errno) << std::endl;
-		return (false);
-	}
 	if ( getaddrinfo(NULL, PORT , &hint, addr) != 0 )
 	{
 		std::cerr << gai_strerror(errno) << std::endl;
 		return (false);
 	}
-	res = *addr;
-	for (struct addrinfo *tmp = res; tmp != NULL; tmp = res->ai_next)
+	for (struct addrinfo *tmp = *addr; tmp != NULL; tmp = tmp->ai_next)
 	{
-		if (bind(socketfd, res->ai_addr, res->ai_addrlen) == 0)
+		socketfd = socket(tmp->ai_family, tmp->ai_socktype, tmp->ai_protocol);
+		if ( socketfd < 0 )
+		{
+			std::cerr << "CreateSocket : " << strerror(errno) << std::endl;
+			return (false);
+		}
+		if (bind(socketfd, tmp->ai_addr, tmp->ai_addrlen) == 0)
 			break;
+		close(socketfd);
 	}
-	freeaddrinfo(res);
 	if (listen(socketfd, 1) < 0)
 	{
 		std::cerr << "Listen : " << strerror(errno) << std::endl;
