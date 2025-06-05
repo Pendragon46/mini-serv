@@ -1,4 +1,4 @@
-SRCS = main.cpp MiniServ.cpp
+SRCS = main.cpp MiniServ.cpp Client.cpp FdCollector.cpp signal.cpp
 
 OBJ_DIR = obj
 
@@ -24,6 +24,9 @@ clean :
 
 fclean :	clean
 			rm -rf $(NAME)
+
+val :
+		valgrind --leak-check=full --track-fds=yes --track-origins=yes ./$(NAME)
 
 re : fclean all
 

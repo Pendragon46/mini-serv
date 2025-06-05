@@ -12,6 +12,7 @@
 # define MINI_SERV_HPP
 
 #include <unistd.h>
+#include <exception>
 #include <errno.h>
 #include <string>
 #include <cstring>
@@ -19,18 +20,47 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <netdb.h>
+#include <list>
+#include <FdCollector.hpp>
+#include <Client.hpp>
+#include <signal.h>
+#include <stdlib.h>
 
-#define	PORT "4242"
+
+#define	PORT	4646
+#define	LISTENQ 46
+#define DATALEN 1080
 class MiniServ
 {
 	private:
-		MiniServ();
 		MiniServ( const MiniServ &toCopy );
-		~MiniServ();
 		MiniServ &operator=( const MiniServ &toCopy );
-
+		
 	public:
-		static bool Init( int &socket, struct addrinfo **res);
+		int					sock;
+		struct sockaddr_in	addr;
+		static FdCollector	fd;
+		static sig_atomic_t	sig;
+		
+		MiniServ();
+		~MiniServ();
+		void	collect(int fd);
+		void	remove(Client &client);
+		void	ft_accept(Client &client);
+		bool	getRequest(Client &client);
+		bool	sendResponse(Client &client);
+		static void	signalHandler();
+
+		class BadConstructException : public std::exception
+		{
+			public:
+				const char* what() const throw();
+		};
+		class ConnexionException : public std::exception
+		{
+			public:
+				const char* what() const throw();
+		};
 };
 
 #endif

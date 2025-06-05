@@ -9,33 +9,19 @@
 
 int main ( void )
 {
-	int				servSocket;
-	struct addrinfo *addrServ;
+	MiniServ	serv;
 
-	if ( MiniServ::Init(servSocket, &addrServ) == false )
-		return (1);
-	while ( true )
+	serv.signalHandler();
+	while ( !MiniServ::sig )
 	{
-		std::cout << "Waiting connection on port " << PORT << " ..." << std::endl;
-		// struct addrinfo addrClient;
-		struct sockaddr_in addrClient;
-		socklen_t size ;
-		int	clientSocket = accept(servSocket, (sockaddr *)(&addrClient), &size);
-		if (clientSocket  == -1)
-		{
-			std::cerr << "Accept : " << strerror(errno) << std::endl;
-			return (1);
-		}
-		std::cout << "Client connected " << std::endl;
-		std::string data("Congrats your client app work !");
+		Client		client;
 
-		if (send(clientSocket, data.c_str(), data.length(), 0) < 0)
-		{
-			std::cerr << "Send : " << strerror(errno) << std::endl;
-			return (1);
-		}
-		close(clientSocket);
+		std::cout << "Waiting connection on port " << PORT << "..." << std::endl;
+		serv.ft_accept(client);
+		serv.getRequest(client);
+		serv.sendResponse(client);
+		serv.remove(client);
 	}
-	close(servSocket);
+	std::cout << "\nServer shut down gracefully." << std::endl;
 	return 0;
 }
