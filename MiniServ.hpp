@@ -39,8 +39,6 @@ class MiniServ
 	public:
 		int					sock;
 		struct sockaddr_in	addr;
-		static FdCollector	fd;
-		static sig_atomic_t	sig;
 		
 		MiniServ();
 		~MiniServ();
@@ -49,6 +47,9 @@ class MiniServ
 		void	ft_accept(Client &client);
 		bool	getRequest(Client &client);
 		bool	sendResponse(Client &client);
+
+		static FdCollector	fd;
+		static sig_atomic_t	sig;
 		static void	signalHandler();
 
 		class BadConstructException : public std::exception

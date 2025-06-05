@@ -10,14 +10,17 @@
 
 #include<FdCollector.hpp>
 
-FdCollector::FdCollector() : fd()
+FdCollector::FdCollector() : fd(), allFdClosed(false)
 {};
 FdCollector::~FdCollector()
 {
-	for (std::list<int>::iterator it = fd.begin(); it != fd.end(); it++)
+	if (allFdClosed == false)
 	{
-		if (*it != -1)
-			close(*it);
+		for (std::list<int>::iterator it = fd.begin(); it != fd.end(); it++)
+		{
+			if (*it != -1)
+				close(*it);
+		}
 	}
 };
 
@@ -49,4 +52,5 @@ void	FdCollector::clear()
 			*it = -1;
 		}
 	}
+	allFdClosed = true;
 }

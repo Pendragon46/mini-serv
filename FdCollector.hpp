@@ -17,7 +17,8 @@
 class FdCollector
 {
 	private:
-		std::list<int> fd;
+		std::list<int>	fd;
+		bool			allFdClosed;
 		
 	public:
 		FdCollector();
