@@ -21,7 +21,7 @@ MiniServ &MiniServ::operator=( const MiniServ &toCopy)
 	static_cast<void>(toCopy);
 	return (*this);
 }
- 
+
 MiniServ::MiniServ() : sock(-1)
 {
 	bzero(&addr, sizeof(addr));
@@ -45,6 +45,10 @@ MiniServ::MiniServ() : sock(-1)
 		throw BadConstructException();
 	}
 	fd.collect(sock);
+	fds[0].fd = sock;
+	fds[0].events = POLL_IN;
+	for (int i = 1; i < OPEN_MAX; i++)
+		fds[i].fd = -1;
 }
 MiniServ::~MiniServ()
 {
@@ -56,30 +60,33 @@ MiniServ::~MiniServ()
 /*		  HTTP/1.1 Function		*/
 /********************************/
 
-void	MiniServ::ft_accept(Client &client)
+void	MiniServ::ft_accept( )
 {
-	client.sock = accept(sock, (sockaddr *)(&client.addr), &client.size);
+	Client	newClient;
+
+	newClient.sock = accept(sock, (sockaddr *)(&newClient.addr), &newClient.size);
 	if (sig)
 		return;
-	if (client.sock  == -1 )
+	if (newClient.sock  == -1 )
 	{
 		std::cerr << "Accept : " << strerror(errno) << std::endl;
 		throw BadConstructException();
 	}
-	std::cout << "Client connected " << std::endl;
-	fd.collect(client.sock);
+	std::cout << "\n\nClient ( " << inet_ntoa(newClient.addr.sin_addr) << " ) connected." << std::endl;
+	collect(newClient);
 }
 
-bool	MiniServ::getRequest(Client &client)
+bool	MiniServ::getRequest(int fdKey)
 {
 	std::string	res;
 	char		tmp[DATALEN + 1];
 	int			status = DATALEN;
+	Client		&clt = client[fdKey];
 
 	while (status == DATALEN)
 	{
 		memset(tmp, 0, sizeof(char) * DATALEN);
-		status = recv(client.sock, tmp, DATALEN, 0);
+		status = recv(clt.sock, tmp, DATALEN, 0);
 		if (sig)
 			return(true);
 		if (status == -1)
@@ -90,23 +97,30 @@ bool	MiniServ::getRequest(Client &client)
 		tmp[DATALEN] = '\0';
 		res += tmp;
 	}
-	std::cout	<<"-------------------------------------------------"
-				<< "Request =\n" << res
+	std::cout	<<"Request =\n"
+				<<"-------------------------------------------------\n"
+				<< res
 				<<"-------------------------------------------------"
 				<< std::endl;
+	clt.pollstruct->events = POLLOUT;
+	clt.request = res;
+	//  process response
+	clt.response = "Congrats your client app work !";
 	return (true);
 }
 
-bool	MiniServ::sendResponse(Client &client)
+bool	MiniServ::sendResponse(int fdKey)
 {
-	std::string data("Congrats your client app work !");
-	if (send(client.sock, data.c_str(), data.length(), 0) < 0)
+	Client		&clt = client[fdKey];
+
+	if (send(clt.sock, clt.response.c_str(), clt.response.length(), 0) < 0)
 	{
 		if (sig)
 			return(true);
 		std::cerr << "Send : " << strerror(errno) << std::endl;
 		return (false);
 	}
+	remove(clt);
 	return (true);
 }
 
@@ -115,14 +129,25 @@ bool	MiniServ::sendResponse(Client &client)
 /*			FD Collector		*/
 /********************************/
 
-void	MiniServ::collect(int newFd)
+void	MiniServ::collect(Client &newClient)
 {
-	fd.collect(newFd);
+	int i = 1;
+
+	fd.collect(newClient.sock);
+	for (; i < OPEN_MAX && fds[i].fd != -1; i++);
+	fds[i].fd = newClient.sock;
+	fds[i].events = POLL_IN;
+	newClient.pollstruct = &fds[i];
+	client[newClient.sock] = newClient;
+	client[newClient.sock].sock = newClient.sock;
 }
 
-void	MiniServ::remove(Client &client)
+void	MiniServ::remove(Client &clt)
 {
-	fd.remove(client.sock);
+	clt.pollstruct->fd = -1;
+	clt.pollstruct->events = -1;
+	client.erase(clt.sock);
+	fd.remove(clt.sock);
 }
 
 /********************************/

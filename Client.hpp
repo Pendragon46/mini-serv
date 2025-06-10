@@ -11,15 +11,21 @@
 #ifndef CLIENT_HPP
 # define CLIENT_HPP
 # include <arpa/inet.h>
+# include <string>
+#include <poll.h>
 
 class Client
 {
 	public:
 		int					sock;
 		socklen_t			size;
+		std::string			request;
+		std::string			response;
+		struct	pollfd		*pollstruct;
 		struct	sockaddr_in addr;
 
 		Client(/* args */);
 		~Client();
 };
+
 #endif

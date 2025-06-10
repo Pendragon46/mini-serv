@@ -25,11 +25,16 @@
 #include <Client.hpp>
 #include <signal.h>
 #include <stdlib.h>
+#include <poll.h>
+#include <map>
+#include <limits.h>
 
 
 #define	PORT	4646
 #define	LISTENQ 46
 #define DATALEN 1080
+#define OPEN_MAX 1024
+
 class MiniServ
 {
 	private:
@@ -37,16 +42,18 @@ class MiniServ
 		MiniServ &operator=( const MiniServ &toCopy );
 		
 	public:
-		int					sock;
-		struct sockaddr_in	addr;
+		int						sock;
+		struct pollfd			fds[OPEN_MAX];
+		std::map<int, Client>	client;
+		struct sockaddr_in		addr;
 		
 		MiniServ();
 		~MiniServ();
-		void	collect(int fd);
+		void	collect(Client &client);
+		void	ft_accept();
 		void	remove(Client &client);
-		void	ft_accept(Client &client);
-		bool	getRequest(Client &client);
-		bool	sendResponse(Client &client);
+		bool	getRequest(int fdKey);
+		bool	sendResponse(int fdKey);
 
 		static FdCollector	fd;
 		static sig_atomic_t	sig;
