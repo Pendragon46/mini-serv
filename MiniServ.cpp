@@ -28,23 +28,13 @@ MiniServ::MiniServ() : sock(-1)
 	addr.sin_family = AF_INET;
 	addr.sin_port = htons(PORT);
 	addr.sin_addr.s_addr = htonl(INADDR_ANY);
-	sock = socket(addr.sin_family, SOCK_STREAM, 0);
-	if (sock < 0)
-	{
-		std::cerr << "Socket : " << strerror(errno) << std::endl;
-		throw BadConstructException();
-	}
-	if (bind(sock, (sockaddr *)&addr, sizeof(addr)) < 0)
-	{
-		std::cerr << "Bind : " << strerror(errno) << std::endl;
-		throw BadConstructException();
-	}
-	if (listen(sock, LISTENQ) < 0)
-	{
-		std::cerr << "Listen : " << strerror(errno) << std::endl;
-		throw BadConstructException();
-	}
+	
+	sock = wrap_socket(addr.sin_family, SOCK_STREAM, 0);
+	wrap_bind(sock, reinterpret_cast<sockaddr *>(&addr), sizeof(addr));
+	wrap_listen(sock, LISTENQ);
+	
 	fd.collect(sock);
+	bzero(&fds, sizeof(fds));
 	fds[0].fd = sock;
 	fds[0].events = POLL_IN;
 	for (int i = 1; i < OPEN_MAX; i++)
@@ -64,15 +54,7 @@ void	MiniServ::ft_accept( )
 {
 	Client	newClient;
 
-	newClient.sock = accept(sock, (sockaddr *)(&newClient.addr), &newClient.size);
-	if (sig)
-		return;
-	if (newClient.sock  == -1 )
-	{
-		std::cerr << "Accept : " << strerror(errno) << std::endl;
-		throw BadConstructException();
-	}
-	std::cout << "\n\nClient ( " << inet_ntoa(newClient.addr.sin_addr) << " ) connected." << std::endl;
+	newClient = wrap_accept(sock, (sockaddr *)(&newClient.addr), &newClient.size);
 	collect(newClient);
 }
 
@@ -87,8 +69,6 @@ bool	MiniServ::getRequest(int fdKey)
 	{
 		memset(tmp, 0, sizeof(char) * DATALEN);
 		status = recv(clt.sock, tmp, DATALEN, 0);
-		if (sig)
-			return(true);
 		if (status == -1)
 		{
 			std::cerr << "Recv : " << strerror(errno) << std::endl;
@@ -115,8 +95,6 @@ bool	MiniServ::sendResponse(int fdKey)
 
 	if (send(clt.sock, clt.response.c_str(), clt.response.length(), 0) < 0)
 	{
-		if (sig)
-			return(true);
 		std::cerr << "Send : " << strerror(errno) << std::endl;
 		return (false);
 	}

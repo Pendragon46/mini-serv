@@ -12,23 +12,26 @@
 # define MINI_SERV_HPP
 
 #include <unistd.h>
-#include <exception>
+#include <limits.h>
+#include <stdlib.h>
+#include <signal.h>
+#include <poll.h>
 #include <errno.h>
-#include <string>
-#include <cstring>
-#include <iostream>
+
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <netdb.h>
+
+#include <exception>
+#include <iostream>
+#include <string>
+#include <cstring>
 #include <list>
+#include <map>
+
+#include <WrapperFunction.hpp>
 #include <FdCollector.hpp>
 #include <Client.hpp>
-#include <signal.h>
-#include <stdlib.h>
-#include <poll.h>
-#include <map>
-#include <limits.h>
-
 
 #define	PORT	4646
 #define	LISTENQ 46

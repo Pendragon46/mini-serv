@@ -1,4 +1,4 @@
-SRCS = main.cpp MiniServ.cpp Client.cpp FdCollector.cpp signal.cpp
+SRCS = main.cpp MiniServ.cpp Client.cpp FdCollector.cpp signal.cpp WrapperFunction.cpp
 
 OBJ_DIR = obj
 

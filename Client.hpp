@@ -19,10 +19,11 @@ class Client
 	public:
 		int					sock;
 		socklen_t			size;
+		struct	sockaddr_in addr;
+
 		std::string			request;
 		std::string			response;
 		struct	pollfd		*pollstruct;
-		struct	sockaddr_in addr;
 
 		Client(/* args */);
 		~Client();
