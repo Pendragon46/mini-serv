@@ -21,7 +21,7 @@ MiniServ &MiniServ::operator=( const MiniServ &toCopy)
 	static_cast<void>(toCopy);
 	return (*this);
 }
-
+ 
 MiniServ::MiniServ() : sock(-1)
 {
 	bzero(&addr, sizeof(addr));
