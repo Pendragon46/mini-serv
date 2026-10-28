@@ -65,7 +65,3 @@ Client wrap_accept(int sockfd, struct sockaddr *addr, socklen_t *addrlen)
 	return (newClient);
 }
 
-std::s  wrap_recv(int fd, DATALEN)
-{
-
-}
